@@ -1,13 +1,13 @@
 import java.util.*;
 
 public class Dijkstra{
-    int[][] distanceMap;
+    double[][] distanceMap;
 
-    public static void computePaths(Vertex source){
+    public void computePaths(Vertex source){
         source.minDistance = 0.;
         PriorityQueue<Vertex> vertexQueue = new PriorityQueue<Vertex>();
         vertexQueue.add(source);
-
+        this.distanceMap[source.getId()][source.getId()] = 0;
         while (!vertexQueue.isEmpty()) {
             Vertex u = vertexQueue.poll();
 
@@ -21,13 +21,14 @@ public class Dijkstra{
                     vertexQueue.remove(v);
                     v.minDistance = distanceThroughU ;
                     v.previous = u;
+                    this.distanceMap[source.getId()][v.getId()] = distanceThroughU;
                     vertexQueue.add(v);
                 }
             }
         }
     }
 
-    public static List<Vertex> getShortestPathTo(Vertex target) {
+    public  List<Vertex> getShortestPathTo(Vertex target) {
         List<Vertex> path = new ArrayList<Vertex>();
         for (Vertex vertex = target; vertex != null; vertex = vertex.previous)
             path.add(vertex);
@@ -36,45 +37,71 @@ public class Dijkstra{
     }
 
     public static void main(String[] args) {
-        int[][] distanceMap = new int[100][100];
-        int n, m;
+        Dijkstra map = new Dijkstra();
+        map.distanceMap = new double[100][100];
+        int n, m, x, y;
+        double weight;
         Scanner input = new Scanner(System.in);
 
         System.out.println("Enter the number of vertices and edges");
 //        n = input.nextInt();
 //        m = input.nextInt();
+        n = 5;
 
-        Vertex v0 = new Vertex("Redvile");
-        Vertex v1 = new Vertex("Blueville");
-        Vertex v2 = new Vertex("Greenville");
-        Vertex v3 = new Vertex("Orangeville");
-        Vertex v4 = new Vertex("Purpleville");
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                map.distanceMap[i][j] = -1;
+            }
+        }
+
         List<Vertex> vertices = new ArrayList<Vertex>();
 
-        vertices.add(v0);
-        vertices.add(v1);
-        vertices.add(v2);
-        vertices.add(v3);
-        vertices.add(v4);
+        for(int i = 0; i < n; i++){
+            vertices.add(new Vertex(i));
+        }
 
-        v0.adjacencies.add(new Edge(v1, 5));
-        v0.adjacencies.add(new Edge(v2, 10));
-        v0.adjacencies.add(new Edge(v3, 8));
-        v1.adjacencies.add(new Edge(v0, 5));
-        v1.adjacencies.add(new Edge(v2, 3));
-        v1.adjacencies.add(new Edge(v4, 7));
-        v2.adjacencies.add(new Edge(v0, 10));
-        v2.adjacencies.add(new Edge(v1, 3));
-        v3.adjacencies.add(new Edge(v0, 8));
-        v3.adjacencies.add(new Edge(v4, 2));
-        v4.adjacencies.add(new Edge(v1, 7));
-        v4.adjacencies.add(new Edge(v3, 2));
+        vertices.get(0).adjacencies.add(new Edge(vertices.get(1), 5));
+        vertices.get(0).adjacencies.add(new Edge(vertices.get(2), 10));
+        vertices.get(0).adjacencies.add(new Edge(vertices.get(3), 8));
 
-        computePaths(v0);
-        for (Vertex v : vertices) {
-            System.out.println("Distance to " + v + ": " + v.minDistance);
-            List<Vertex> path = getShortestPathTo(v);
-            System.out.println("Path: " + path);
+        vertices.get(1).adjacencies.add(new Edge(vertices.get(0), 5));
+        vertices.get(1).adjacencies.add(new Edge(vertices.get(2), 3));
+        vertices.get(1).adjacencies.add(new Edge(vertices.get(4), 7));
+
+        vertices.get(2).adjacencies.add(new Edge(vertices.get(0), 10));
+        vertices.get(2).adjacencies.add(new Edge(vertices.get(1), 3));
+
+        vertices.get(3).adjacencies.add(new Edge(vertices.get(0), 8));
+        vertices.get(3).adjacencies.add(new Edge(vertices.get(4), 2));
+
+        vertices.get(4).adjacencies.add(new Edge(vertices.get(1), 7));
+        vertices.get(4).adjacencies.add(new Edge(vertices.get(3), 2));
+
+//        for(int i = 0; i < m; i++){
+//            x = input.nextInt();
+//            y = input.nextInt();
+//            weight = input.nextDouble();
+//            vertices.get(x).adjacencies.add(new Edge(vertices.get(y), weight));
+//            vertices.get(y).adjacencies.add(new Edge(vertices.get(x), weight));
+//        }
+
+        for(int i = 0; i < n; i++) {
+            map.computePaths(vertices.get(i));
+            for(int j = 0; j < n; j++){
+                vertices.get(j).reset();
+            }
+        }
+//        for (Vertex v : vertices) {
+//            System.out.println("Distance to " + v + ": " + v.minDistance);
+//            List<Vertex> path = map.getShortestPathTo(v);
+//            System.out.println("Path: " + path);
+//        }
+
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                System.out.print(map.distanceMap[i][j] + "  ");
+            }
+            System.out.println("");
         }
     }
 }
