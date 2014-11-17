@@ -16,6 +16,13 @@ public class Vertex implements Comparable<Vertex> {
         adjacencies = new ArrayList<Edge>();
     }
 
+    public Vertex getNeighbour(int i){
+        return this.adjacencies.get(i).target;
+    }
+
+    public List<Edge> getAdjacencies(){ return this.adjacencies; }
+
+
     public void reset(){
         minDistance = Double.POSITIVE_INFINITY;
     }

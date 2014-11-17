@@ -5,6 +5,10 @@ public class Edge {
     public final Vertex target;
     public final double weight;
 
+    public Vertex getTarget(){
+        return target;
+    }
+
     public Edge(Vertex argTarget, double argWeight){
         target = argTarget; weight = argWeight;
     }
