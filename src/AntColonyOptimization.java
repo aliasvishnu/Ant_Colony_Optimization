@@ -13,9 +13,9 @@ public class AntColonyOptimization {
                 Thread t = new Thread(ant);
                 t.start();
             }
-            Thread.sleep(2000);
+            Thread.sleep(500);
             graph.evaporatePheromone();
-            System.out.println("\nAfter " + j+1 + " Iterations => Path is ");
+            System.out.println("\nAfter " + (j+1) + " Iterations => Path is ");
             graph.printTour();
         }
     }
