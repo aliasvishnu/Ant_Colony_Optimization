@@ -21,7 +21,7 @@ public class Graph{
         public double y;
     }
 
-    public Graph(){
+    public Graph(int nov){
         this.distanceMap = new double[100][100];
         this.pheromoneMap = new double[100][100];
 
@@ -32,11 +32,16 @@ public class Graph{
             }
         }
 
-        this.n = 52;
+        this.n = nov;
+
+    }
+
+    public static Graph getGraph(int nov){
+        if(Graph.graph == null) Graph.graph = new Graph(nov);
+        return Graph.graph;
     }
 
     public static Graph getGraph(){
-        if(Graph.graph == null) Graph.graph = new Graph();
         return Graph.graph;
     }
 
@@ -174,7 +179,9 @@ public class Graph{
 //        }
     }
 
-    public synchronized double printTour(){
+    public synchronized List<Integer> printTour(){
+        List<Integer> order = new ArrayList<Integer>();
+        order.add(0);
         int i = 0;
         int current = 0;
         double totDist = 0d;
@@ -196,12 +203,13 @@ public class Graph{
             totDist += graph.distanceMap[current][v];
             if(v != 0)visit[v] = true;
             current = v;
-
-            System.out.print(" => " + v);
+            order.add(v);
         }
-        System.out.println("");
-        return totDist;
+
+//        return totDist;
+        return order;
     }
+
 
     public synchronized void printPheromoneMap(){
         for(int i = 0; i < Graph.n; i++){
