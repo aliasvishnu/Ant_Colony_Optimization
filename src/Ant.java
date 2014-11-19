@@ -11,15 +11,19 @@ public class Ant implements Runnable{
     Boolean[] visit;
     public int n;
     public Graph graph;
-    public static final double ALPHA = 9.6d;
-    public static final double BETA = -0.2d;
+    private double pGenSum;
+    public boolean loop;
+    public static final double ALPHA = -0.2;
+    public static final double BETA = -9.6;
 
     public Ant(){
         memory = Collections.synchronizedList(new ArrayList<Integer>());
-//        this.id = aid;
 
         visit = new Boolean[100];
         Arrays.fill(visit, Boolean.FALSE);
+
+        this.pGenSum = 0;
+        this.loop = false;
 
         this.n = Graph.n;
         this.graph = Graph.getGraph();
@@ -27,60 +31,103 @@ public class Ant implements Runnable{
         this.vertices = Collections.synchronizedList(this.vertices);
     }
 
-
-
     public double pGen(double pheromone, double dist){
-//        System.out.println("Pheromone: " + pheromone + " and Distance: " + dist);
-        return Math.pow(pheromone, ALPHA) + Math.pow(dist, BETA);
+        double val = Math.pow(pheromone, ALPHA)*Math.pow(dist, BETA);
+        this.pGenSum += val;
+        return val;
+    }
+
+    public void pGenDivide(List<Double> probabilities){
+        int len = probabilities.size();
+        double tot = 0d;
+        for(int i = 0; i < len; i++){
+           probabilities.set(i, probabilities.get(i)/pGenSum);
+            tot += probabilities.get(i);
+        }
+        // System.out.println("Total Probability is " + tot);
+    }
+
+    public int randomSelector(List<Double> probabilities){
+        int ans = 0;
+        int len = probabilities.size();
+
+        List<Integer> modified = new ArrayList<Integer>();
+        for(int i = 0;i < len; i++){
+            modified.add((int)(probabilities.get(i)*10000));
+        }
+
+        int randomNumber = ((new Random()).nextInt(10000));
+
+        for(int i = 0; i < len; i++){
+            if(randomNumber > modified.get(i))   {
+                randomNumber -= modified.get(i);
+            }
+            else return i;
+        }
+        return ans;
     }
 
     public Vertex select(List<Vertex> adjacencies, List<Double> probabilities){
-        int neighbourCount = adjacencies.size();
+        int randomReturn = randomSelector(probabilities);
 
-        Double temp = probabilities.get(0);
-        int randomReturn = 0;
-
-        /* Max */
-        for(int i = 0; i < neighbourCount; i++){
-            if(temp < probabilities.get(i)){
-                randomReturn = i;
-                temp = probabilities.get(i);
-            }
-        }
+//        double temp = probabilities.get(0);
+//        int randomReturn = 0;
+//        int neighbourCount = adjacencies.size();
+//        /* Max */
+//        for(int i = 0; i < neighbourCount; i++){
+//            if(temp < probabilities.get(i)){
+//                randomReturn = i;
+//                temp = probabilities.get(i);
+//            }
+//        }
         return adjacencies.get(randomReturn);
     }
 
     public void run(){
         int current = 0;
-        int noOfVisitedVertices = 1;
-        this.visit[current] = true;
+        int noOfVisitedVertices = 0;
         memory.add(current);
+        this.loop = false;
 
         while(noOfVisitedVertices < this.n){
-            Boolean loop = false;
+            visit[current] = true;
+            noOfVisitedVertices++;
+            this.pGenSum = 0;
             Vertex currentVertex = this.vertices.get(current);
+
+            /* Adjacent Vertices and corresponding probabilities */
             List<Vertex> adjacentVertex = new ArrayList<Vertex>();
             List<Double> probabilities = new ArrayList<Double>();
 
+
             int neighbourCount = this.vertices.get(current).adjacencies.size();
-//            System.out.println("For Vertex " + current + " : ");
+            //System.out.println("For Vertex " + current + " : ");
 
             for(int i = 0; i < neighbourCount; i++) {
                 if (!visit[currentVertex.getNeighbour(i).getId()]) {
+
                     adjacentVertex.add(currentVertex.getNeighbour(i));
-//                    System.out.println(" " + currentVertex.getNeighbour(i) + " : ");
                     probabilities.add(this.pGen(Graph.getPheromone(current, currentVertex.getNeighbour(i).getId()),
-                                      Graph.getDistance(current, currentVertex.getNeighbour(i).getId())));
+                                                Graph.getDistance(current, currentVertex.getNeighbour(i).getId())));
                 }
             }
 
+            this.pGenDivide(probabilities);
+
             if(adjacentVertex.size() == 0) break;
             Vertex choice = this.select(adjacentVertex, probabilities);
+
 //            System.out.println("Moving from Vertex " + current + " to Vertex:" + choice.getId());
+
             current = choice.getId();
-            visit[current] = true;
             memory.add(current);
             noOfVisitedVertices++;
+
+            if(noOfVisitedVertices == this.n && !this.loop){
+                this.loop = true;
+                visit[0] = false;
+                noOfVisitedVertices--;
+            }
 
         }
 
